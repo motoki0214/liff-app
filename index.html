@@ -82,7 +82,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1 style="font-weight: 700;">アンケートアプリ</h1>
+    <h1 style="font-weight: 700;">一中ラジオ</h1>
     <div id="question-container"></div>
     <button id="restart-button" onclick="restartSurvey()">はじめに戻る</button>
     <div id="result-container" style="display:none;"></div>
@@ -92,16 +92,25 @@
         // アンケートの質問リスト
         const questions = [
             {
-                question: "あなたの好きな色はどれですか？",
+                question: "今の気分は？",
                 options: ["赤", "青", "緑"]
             },
             {
-                question: "好きな食べ物はどれですか？",
+                question: "たとえば？",
                 options: ["ピザ", "寿司", "チョコレート"]
             }
         ];
 
         let surveyResults = "";
+
+        // デバウンス関数を定義
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
 
         // アンケートを作成する関数
         function createSurvey() {
@@ -126,7 +135,7 @@
                     input.name = `question${index}`; // ラジオボタンの名前を設定
                     input.value = option;
                     input.id = `option${index}-${option}`;
-                    input.addEventListener("change", showResults); // 選択されたら結果を表示
+                    input.addEventListener("change", debounce(showResults, 300)); // 選択されたら結果を表示 (デバウンス)
                     
                     label.setAttribute("for", `option${index}-${option}`);
                     label.innerText = option;
