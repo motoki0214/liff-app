@@ -106,7 +106,7 @@
         // アンケートを作成する関数
         function createSurvey() {
             const container = document.getElementById("question-container");
-            container.innerHTML = ""; // コンテナ内を空にする
+            while (container.firstChild) container.removeChild(container.firstChild); // コンテナ内を空にする
             
             // 全ての質問をループして表示
             questions.forEach((q, index) => {
@@ -176,7 +176,7 @@
                             text: results // 結果テキストをメッセージとして送信
                         }
                     ]).then(() => {
-                        alert("トークルームに結果が送信されました。");
+                        liff.closeWindow();
                     }).catch((error) => {
                         console.error('Error sending LINE message:', error);
                         alert("メッセージ送信に失敗しました。");
@@ -186,6 +186,7 @@
                 }
             }).catch((error) => {
                 console.error('LIFF Initialization failed:', error);
+                alert("LIFFの初期化に失敗しました。インターネット接続を確認してください。");
             });
         }
 
