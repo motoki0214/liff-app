@@ -1,7 +1,197 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アンケートアプリ</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+            text-align: center;
+            padding: 50px;
+        }
+        .question {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px auto;
+            display: inline-block;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .question:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        #result-container {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px auto;
+            display: inline-block;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        #result-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #send-line-button {
+            margin-top: 20px;
+            background-color: #0078D4;
+            color: #ffffff;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 25px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        #send-line-button:hover {
+            background-color: #005a9e;
+            transform: translateY(-3px);
+        }
+        #restart-button {
+            margin-top: 20px;
+            background-color: #555555;
+            color: #ffffff;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 25px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        #restart-button:hover {
+            background-color: #333333;
+            transform: translateY(-3px);
+        }
+        input[type="radio"]:checked + label {
+            color: #0078D4;
+            font-weight: bold;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
 <body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
+    <h1 style="font-weight: 700;">アンケートアプリ</h1>
+    <div id="question-container"></div>
+    <button id="restart-button" onclick="restartSurvey()">はじめに戻る</button>
+    <div id="result-container" style="display:none;"></div>
+    <button id="send-line-button" style="display:none;" onclick="sendResultsToLine()">トークルームに送る</button>
+
+    <script>
+        // アンケートの質問リスト
+        const questions = [
+            {
+                question: "あなたの好きな色はどれですか？",
+                options: ["赤", "青", "緑"]
+            },
+            {
+                question: "好きな食べ物はどれですか？",
+                options: ["ピザ", "寿司", "チョコレート"]
+            }
+        ];
+
+        let surveyResults = "";
+
+        // アンケートを作成する関数
+        function createSurvey() {
+            const container = document.getElementById("question-container");
+            container.innerHTML = ""; // コンテナ内を空にする
+            
+            // 全ての質問をループして表示
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement("div");
+                questionDiv.className = "question";
+                
+                // 質問テキストを作成し、divに追加
+                const questionText = document.createElement("h2");
+                questionText.innerText = q.question;
+                questionDiv.appendChild(questionText);
+                
+                // 選択肢を追加
+                q.options.forEach(option => {
+                    const label = document.createElement("label");
+                    const input = document.createElement("input");
+                    input.type = "radio";
+                    input.name = `question${index}`; // ラジオボタンの名前を設定
+                    input.value = option;
+                    input.id = `option${index}-${option}`;
+                    input.addEventListener("change", showResults); // 選択されたら結果を表示
+                    
+                    label.setAttribute("for", `option${index}-${option}`);
+                    label.innerText = option;
+                    questionDiv.appendChild(input);
+                    questionDiv.appendChild(label);
+                    questionDiv.appendChild(document.createElement("br"));
+                });
+                container.appendChild(questionDiv);
+            });
+
+            // 再スタートボタンを表示
+            document.getElementById("restart-button").style.display = "inline-block";
+        }
+
+        // アンケート結果を表示する関数
+        function showResults() {
+            surveyResults = "";
+            // 各質問について、選択されたオプションを取得
+            questions.forEach((q, index) => {
+                const selectedOption = document.querySelector(`input[name='question${index}']:checked`);
+                surveyResults += `<p>${q.question}: ${selectedOption ? selectedOption.value : '選択なし'}</p>`;
+            });
+            const resultContainer = document.getElementById("result-container");
+            resultContainer.innerHTML = surveyResults; // 結果を画面上に表示
+            resultContainer.style.display = "block";
+            resultContainer.classList.add("visible");
+            document.getElementById("send-line-button").style.display = "inline-block"; // LINE送信ボタンを表示
+        }
+
+        // アンケートを再スタートする関数
+        function restartSurvey() {
+            document.getElementById("result-container").style.display = "none"; // 結果を非表示にする
+            document.getElementById("send-line-button").style.display = "none"; // LINE送信ボタンを非表示にする
+            createSurvey(); // 最初の質問を再作成
+        }
+
+        // アンケート結果をLINEに送信する関数
+        function sendResultsToLine() {
+            const results = surveyResults.replace(/<[^>]*>?/gm, ''); // HTMLタグを除去
+            liff.init({
+                liffId: "2004768218-ZDlV5g0m" // LIFF IDを設定
+            }).then(() => {
+                if (liff.isInClient()) {
+                    liff.sendMessages([
+                        {
+                            type: "text",
+                            text: results // 結果テキストをメッセージとして送信
+                        }
+                    ]).then(() => {
+                        alert("トークルームに結果が送信されました。");
+                    }).catch((error) => {
+                        console.error('Error sending LINE message:', error);
+                        alert("メッセージ送信に失敗しました。");
+                    });
+                } else {
+                    alert("LINEアプリ内でのみメッセージを送信できます。");
+                }
+            }).catch((error) => {
+                console.error('LIFF Initialization failed:', error);
+            });
+        }
+
+        // 最初の質問を表示
+        createSurvey();
+    </script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </body>
 </html>
