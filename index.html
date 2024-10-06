@@ -6,36 +6,37 @@
     <title>アンケートアプリ</title>
     <style>
         body {
-            background-color: #ffffff;
-            font-family: 'Roboto', sans-serif;
-            color: #333;
+            background-color: #0d0d0d;
+            font-family: 'Permanent Marker', cursive;
+            color: #00ff99;
             text-align: center;
             padding: 50px;
+            background-image: radial-gradient(circle, #1a1a1a, #0d0d0d);
         }
         .question {
-            background-color: #f9f9f9;
-            border: 1px solid #e0e0e0;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ff00ff;
             border-radius: 15px;
             padding: 30px;
             margin: 20px auto;
             display: inline-block;
             max-width: 600px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
             transition: transform 0.3s, box-shadow 0.3s;
         }
         .question:hover {
-            transform: scale(1.03);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 255, 153, 0.8);
         }
         #result-container {
-            background-color: #f9f9f9;
-            border: 1px solid #e0e0e0;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ff00ff;
             border-radius: 15px;
             padding: 30px;
             margin: 20px auto;
             display: inline-block;
             max-width: 600px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 153, 0.6);
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 0.5s, transform 0.5s;
@@ -46,47 +47,51 @@
         }
         #send-line-button {
             margin-top: 20px;
-            background-color: #0078D4;
+            background-color: #ff00ff;
             color: #ffffff;
             border: none;
             padding: 12px 25px;
             font-size: 16px;
             cursor: pointer;
-            border-radius: 25px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 255, 153, 0.3);
             transition: background-color 0.3s, transform 0.3s;
         }
         #send-line-button:hover {
-            background-color: #005a9e;
+            background-color: #ff33cc;
             transform: translateY(-3px);
         }
         #restart-button {
             margin-top: 20px;
-            background-color: #555555;
+            background-color: #ff00ff;
             color: #ffffff;
             border: none;
             padding: 12px 25px;
             font-size: 16px;
             cursor: pointer;
-            border-radius: 25px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 255, 153, 0.3);
             transition: background-color 0.3s, transform 0.3s;
         }
         #restart-button:hover {
-            background-color: #333333;
+            background-color: #ff33cc;
             transform: translateY(-3px);
         }
         input[type="radio"]:checked + label {
-            color: #0078D4;
+            color: #ff00ff;
             font-weight: bold;
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1 style="font-weight: 700;">一中ラジオ</h1>
+    <h1 style="font-weight: 700; color: #ff00ff;">アンケートアプリ</h1>
     <div id="question-container"></div>
-    <button id="restart-button" onclick="restartSurvey()">はじめに戻る</button>
+    <div>
+        <button id="restart-button" onclick="restartSurvey()">リセット</button>
+        <button id="send-line-button" style="display:none; margin-left: 10px;" onclick="sendResultsToLine()">トークルームに送る</button>
+    </div>
     <div id="result-container" style="display:none;"></div>
-    <button id="send-line-button" style="display:none;" onclick="sendResultsToLine()">トークルームに送る</button>
 
     <script>
         // アンケートの質問リスト
@@ -116,8 +121,13 @@
         function createSurvey() {
             const container = document.getElementById("question-container");
             while (container.firstChild) container.removeChild(container.firstChild); // コンテナ内を空にする
-            
-            // 全ての質問をループして表示
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                container.style.transition = 'opacity 1s ease, transform 1s ease';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
             questions.forEach((q, index) => {
                 const questionDiv = document.createElement("div");
                 questionDiv.className = "question";
@@ -156,7 +166,7 @@
             // 各質問について、選択されたオプションを取得
             questions.forEach((q, index) => {
                 const selectedOption = document.querySelector(`input[name='question${index}']:checked`);
-                surveyResults += `<p>${q.question}: ${selectedOption ? selectedOption.value : '選択なし'}</p>`;
+                surveyResults += `<p>${selectedOption ? selectedOption.value : '選択なし'}</p>`;
             });
             const resultContainer = document.getElementById("result-container");
             resultContainer.innerHTML = surveyResults; // 結果を画面上に表示
