@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>How do you feel now?</title>
+    <title>今、どんな気分？</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
@@ -15,7 +15,9 @@
             background: #1a1a1a;
             border-radius: 15px;
             border: 2px solid #ff00ff;
-            color: #00ff99;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 20px;
             box-shadow: 0 0 20px rgba(0, 255, 153, 0.6);
             animation: glow 3s infinite;
         }
@@ -63,17 +65,28 @@
             box-shadow: 0 0 30px rgba(0, 255, 153, 0.8);
         }
         #result-container {
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: #ff00ff;
             border: 2px solid #ff00ff;
             border-radius: 15px;
             padding: 30px;
             margin: 20px auto;
             display: inline-block;
             max-width: 600px;
-            box-shadow: 0 0 20px rgba(0, 255, 153, 0.6);
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.6), 0 8px 16px rgba(0, 0, 0, 0.4);
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 0.5s, transform 0.5s;
+            cursor: pointer;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
         }
         #result-container.visible {
             opacity: 1;
@@ -127,7 +140,7 @@
     <div id="result-container" class="speech-bubble" style="display:none;"></div>
     <div id="arrow-indicator-2" style="display:none; font-size: 30px; margin: 10px 0;">↓</div>
     <div style="margin-top: 20px;">
-        <button id="send-line-button" style="display:none; margin-left: 10px;" onclick="sendResultsToLine()">トークルームに送る</button>
+        
     </div>
     <div style="margin-top: 20px;">
         <button id="restart-button" onclick="restartSurvey()">リセット</button>
@@ -179,7 +192,7 @@
                         if (index === 0) {
                             document.querySelector(`#question-container div:nth-child(${index + 2})`).scrollIntoView({ behavior: 'smooth' });
                         } else if (index === 1) {
-                            document.getElementById("send-line-button").scrollIntoView({ behavior: 'smooth' });
+                            document.getElementById("result-container").scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
                         debounce(showResults, 300)();
                     }); // 選択されたら結果を表示 (デバウンス)
@@ -208,6 +221,7 @@
             const resultContainer = document.getElementById("result-container");
             resultContainer.innerHTML = "";
             resultContainer.innerHTML = surveyResults;
+            resultContainer.onclick = () => sendResultsToLine();
             document.getElementById("arrow-indicator").style.display = "block";
             document.getElementById("arrow-indicator").style.marginTop = "30px";
             resultContainer.style.display = "block";
