@@ -3,8 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>アンケートアプリ</title>
-    <style>
+    <title>今、どんな気分？</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+        .speech-bubble {
+            max-width: 300px;
+            padding: 20px;
+            margin: 20px auto;
+            position: relative;
+            background: #1a1a1a;
+            border-radius: 15px;
+            border: 2px solid #ff00ff;
+            color: #00ff99;
+            box-shadow: 0 0 20px rgba(0, 255, 153, 0.6);
+            animation: glow 3s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 255, 153, 0.6);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 105, 180, 1);
+            }
+        }
+        
+        .face:nth-child(2) { transform: rotateY(90deg) translateZ(75px); }
+        .face:nth-child(3) { transform: rotateY(180deg) translateZ(75px); }
+        .face:nth-child(4) { transform: rotateY(-90deg) translateZ(75px); }
+        .face:nth-child(5) { transform: rotateX(90deg) translateZ(75px); }
+        .face:nth-child(6) { transform: rotateX(-90deg) translateZ(75px); }
+        
+            50% { transform: rotateX(340deg) rotateY(390deg); }
+        }
+    </style>
+<style>
         body {
             background-color: #0d0d0d;
             font-family: 'Press Start 2P', cursive;
@@ -81,32 +115,30 @@
             color: #ff00ff;
             font-weight: bold;
         }
-    input[type="radio"]:checked {
+        input[type="radio"]:checked {
             accent-color: #ff69b4;
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1 style="font-weight: 700; color: #ff00ff;">アンケートアプリ</h1>
+    <h1 id="animated-title" style="font-weight: 700; color: #ff00ff;"></h1>
     <div id="question-container"></div>
-    <div>
-        <button id="restart-button" onclick="restartSurvey()">リセット</button>
+    <div id="arrow-indicator" style="display:none; font-size: 30px; margin: 20px 0; position: relative; left: 50%; transform: translateX(-50%);">↓</div>
+    <div id="result-container" class="speech-bubble" style="display:none;"></div>
+    <div id="arrow-indicator-2" style="display:none; font-size: 30px; margin: 10px 0;">↓</div>
+    <div style="margin-top: 20px;">
         <button id="send-line-button" style="display:none; margin-left: 10px;" onclick="sendResultsToLine()">トークルームに送る</button>
+    </div>
+    <div style="margin-top: 20px;">
+        <button id="restart-button" onclick="restartSurvey()">リセット</button>
     </div>
     <div id="result-container" style="display:none;"></div>
 
     <script>
         // アンケートの質問リスト
         const questions = [
-            {
-                question: "今の気分は？",
-                options: ["赤", "青", "緑"]
-            },
-            {
-                question: "たとえば？",
-                options: ["ピザ", "寿司", "チョコレート"]
-            }
+            { options: ["集中して", "リラックスして", "テンション上げて"] },
+            { options: ["笑いたい", "懐かしみたい", "良いネタ聴きたい"] }
         ];
 
         let surveyResults = "";
@@ -135,11 +167,6 @@
                 const questionDiv = document.createElement("div");
                 questionDiv.className = "question";
                 
-                // 質問テキストを作成し、divに追加
-                const questionText = document.createElement("h2");
-                questionText.innerText = q.question;
-                questionDiv.appendChild(questionText);
-                
                 // 選択肢を追加
                 q.options.forEach(option => {
                     const label = document.createElement("label");
@@ -148,7 +175,14 @@
                     input.name = `question${index}`; // ラジオボタンの名前を設定
                     input.value = option;
                     input.id = `option${index}-${option}`;
-                    input.addEventListener("change", debounce(showResults, 300)); // 選択されたら結果を表示 (デバウンス)
+                    input.addEventListener("change", function() {
+                        if (index === 0) {
+                            document.querySelector(`#question-container div:nth-child(${index + 2})`).scrollIntoView({ behavior: 'smooth' });
+                        } else if (index === 1) {
+                            document.getElementById("send-line-button").scrollIntoView({ behavior: 'smooth' });
+                        }
+                        debounce(showResults, 300)();
+                    }); // 選択されたら結果を表示 (デバウンス)
                     
                     label.setAttribute("for", `option${index}-${option}`);
                     label.innerText = option;
@@ -172,22 +206,36 @@
                 surveyResults += `<p>${selectedOption ? selectedOption.value : '選択なし'}</p>`;
             });
             const resultContainer = document.getElementById("result-container");
-            resultContainer.innerHTML = surveyResults; // 結果を画面上に表示
+            resultContainer.innerHTML = "";
+            resultContainer.innerHTML = surveyResults;
+            document.getElementById("arrow-indicator").style.display = "block";
+            document.getElementById("arrow-indicator").style.marginTop = "30px";
             resultContainer.style.display = "block";
             resultContainer.classList.add("visible");
-            document.getElementById("send-line-button").style.display = "inline-block"; // LINE送信ボタンを表示
+            if (document.querySelectorAll('input[name^="question"]:checked').length === questions.length) {
+                document.getElementById("send-line-button").style.display = "inline-block";
+                document.getElementById("send-line-button").scrollIntoView({ behavior: 'smooth' });
+            }
+            if (document.querySelectorAll('input[name^="question"]:checked').length === questions.length) {
+                document.getElementById("arrow-indicator-2").style.display = "block";
+            }
         }
 
         // アンケートを再スタートする関数
         function restartSurvey() {
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // ページの一番上まで戻る
+            const inputs = document.querySelectorAll('input[type="radio"]');
+            inputs.forEach(input => input.checked = false); // 回答をリセットする
+            document.getElementById("arrow-indicator").style.display = "none";
             document.getElementById("result-container").style.display = "none"; // 結果を非表示にする
             document.getElementById("send-line-button").style.display = "none"; // LINE送信ボタンを非表示にする
+            document.getElementById("arrow-indicator-2").style.display = "none";
             createSurvey(); // 最初の質問を再作成
         }
 
         // アンケート結果をLINEに送信する関数
         function sendResultsToLine() {
-            const results = surveyResults.replace(/<[^>]*>?/gm, ''); // HTMLタグを除去
+            const results = surveyResults.replace(/<[^>]*>?/gm, '').replace(/<\/p>/g, '\n'); // HTMLタグを除去し、改行を追加
             liff.init({
                 liffId: "2004768218-ZDlV5g0m" // LIFF IDを設定
             }).then(() => {
@@ -211,6 +259,22 @@
                 alert("LIFFの初期化に失敗しました。インターネット接続を確認してください。");
             });
         }
+
+        // タイトルのアニメーションを実行する関数
+        function animateTitle(text, elementId, delay = 100) {
+            const element = document.getElementById(elementId);
+            let index = 0;
+            function typeCharacter() {
+                if (index < text.length) {
+                    element.innerHTML += text[index++];
+                    setTimeout(typeCharacter, delay);
+                }
+            }
+            typeCharacter();
+        }
+
+        // タイトルアニメーションを開始
+        animateTitle("今、どんな気分？", "animated-title");
 
         // 最初の質問を表示
         createSurvey();
